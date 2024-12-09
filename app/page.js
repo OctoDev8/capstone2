@@ -1,95 +1,59 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import SearchBar from "@/components/SearchBar/SearchBar";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Box } from "@mui/material";
+import { Card } from "@mui/material";
+import { Typography } from "@mui/material";
+
+const endpoint = process.env.OMDB_ENDPOINT;
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+	const [value, setValue] = useState("");
+	const [movies, setMovies] = useState([]);
+	const [getMovie, setGetMovies] = useState(null);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	// Form logic
+	const handleChange = (e) => {
+		setValue(e.target.value);
+	};
+
+	async function handleSubmit(e) {
+		e.preventDefault();
+		const url = `https://www.omdbapi.com/?t=${value} 
+ &apikey=7fb4cbbd`;
+
+		const { data } = await axios.get(url);
+		if (!data) {
+			return <p>No movies found, try a different movie!</p>;
+		}
+		setGetMovies(data);
+	}
+	useEffect(() => {
+		console.log("Updated movie data:", getMovie);
+	}, [getMovie]);
+
+	return (
+		<>
+			<SearchBar
+				value={value}
+				handleChange={handleChange}
+				handleSubmit={handleSubmit}
+			/>
+			{getMovie ? (
+				<Card>
+					<Typography variant="h4">
+						{getMovie.Title} ({getMovie.Year})
+					</Typography>
+					<img src={getMovie.Poster} alt="Poster" style={{ width: "200px" }} />
+					<Typography>Director: {getMovie.Director}</Typography>
+					<Typography>Actors: {getMovie.Actors}</Typography>
+					<Typography>Plot: {getMovie.Plot}</Typography>
+					<Typography>IMDb Rating: {getMovie.imdbRating}</Typography>
+				</Card>
+			) : (
+				<Typography>No movie found, try a different search!</Typography>
+			)}
+		</>
+	);
 }

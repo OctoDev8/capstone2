@@ -24,7 +24,6 @@ export default function SaveMovieToSupabase() {
 				console.log(error);
 			}
 		}
-
 		setMovie();
 	}, []);
 }
